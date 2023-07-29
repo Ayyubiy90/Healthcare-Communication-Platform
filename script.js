@@ -40,7 +40,7 @@ loginForm.addEventListener("submit", (event) => {
 });
 
 // Function to display incoming and outgoing messages in the chat box
-function displayMessage(message, sender, timestamp) {
+function displayMessage(message, sender, timestamp, isRead, isImage = false) {
   const div = document.createElement("div");
   div.classList.add("message");
   div.innerHTML = `
@@ -48,6 +48,29 @@ function displayMessage(message, sender, timestamp) {
         <span class="message-timestamp">${timestamp}</span>
         <p class="message-content">${message}</p>
     `;
+  const readIndicator = isRead ? "✔️" : "✓";
+  div.innerHTML = `
+        <span class="message-sender">${sender}</span>
+        <span class="message-timestamp">${formatTimestamp(timestamp)}</span>
+        <p class="message-content">${message}</p>
+        <span class="message-read-indicator">${readIndicator}</span>
+    `;
+  // Check if the message is an image
+  if (isImage) {
+    div.innerHTML = `
+            <span class="message-sender">${sender}</span>
+            <span class="message-timestamp">${formatTimestamp(timestamp)}</span>
+            <img class="message-image" src="${message}" alt="Sent Image">
+            <span class="message-read-indicator">${readIndicator}</span>
+        `;
+  } else {
+    div.innerHTML = `
+            <span class="message-sender">${sender}</span>
+            <span class="message-timestamp">${formatTimestamp(timestamp)}</span>
+            <p class="message-content">${message}</p>
+            <span class="message-read-indicator">${readIndicator}</span>
+        `;
+  }
   chatMessages.appendChild(div);
   // Scroll to the bottom to show the latest messages
   chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -153,5 +176,40 @@ imageInput.addEventListener("change", (event) => {
     reader.onerror = () => {
       displayError("Error: Failed to read the selected image.");
     };
+  }
+});
+
+// Event listener for message deletion
+chatMessages.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest(".delete-button");
+  if (deleteButton) {
+    const messageContainer = deleteButton.closest(".message");
+    const messageId = messageContainer.dataset.messageId;
+    // Emit the message ID to the WebSocket server for deletion
+    socket.send(JSON.stringify({ deleteMessage: messageId }));
+    // Remove the deleted message from the display
+    messageContainer.remove();
+  }
+});
+
+// script.js
+// ... (existing code)
+
+// Event listener for message editing
+chatMessages.addEventListener("click", (event) => {
+  if (event.target.classList.contains("edit-button")) {
+    const messageContainer = event.target.closest(".message");
+    const messageContent = messageContainer.querySelector(".message-content");
+    const originalMessage = messageContent.textContent.trim();
+    const newMessage = prompt("Edit your message:", originalMessage);
+    if (newMessage !== null && newMessage !== originalMessage) {
+      // Emit the edited message to the WebSocket server
+      const messageId = messageContainer.dataset.messageId;
+      socket.send(
+        JSON.stringify({ editMessage: { messageId, content: newMessage } })
+      );
+      // Update the displayed message with the edited content
+      messageContent.textContent = newMessage;
+    }
   }
 });

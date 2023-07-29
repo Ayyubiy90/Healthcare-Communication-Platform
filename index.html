@@ -57,14 +57,25 @@
 
                 <h2>Real-Time Messaging</h2>
                 <div class="chat-container">
-                    <div class="chat-messages">
+                    <!-- Add the typing indicator div here -->
+                    <div id="is-typing-indicator"></div>
+
+                    <div class="chat-messages" id="chat-messages">
                         <!-- Display incoming and outgoing messages here -->
+                        <!-- Each message should have a delete button -->
+                        <!-- Example of a message: -->
+                        <div class="message" data-message-id="1">
+                            <span class="message-sender">John Doe</span>
+                            <span class="message-timestamp">12:34</span>
+                            <p class="message-content">Hello, everyone!</p>
+                            <button class="delete-button">Delete</button>
+                            <button class="edit-button">Edit</button>
+                        </div>
                     </div>
                     <form id="chat-form">
                         <input type="text" id="message-input" placeholder="Type your message...">
                         <button type="submit">Send</button>
                     </form>
-                    <div id="is-typing-indicator"></div>
                     <input type="file" id="image-input" accept="image/*">
                     <button type="button" id="send-image-button">Send Image</button>
                 </div>
