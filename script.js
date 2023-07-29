@@ -40,10 +40,52 @@ loginForm.addEventListener("submit", (event) => {
 });
 
 // Function to display incoming and outgoing messages in the chat box
-function displayMessage(message, sender, timestamp, isRead, isImage = false) {
+function displayMessage(
+  message,
+  sender,
+  timestamp,
+  isRead,
+  isImage = false,
+  messageId
+) {
   const div = document.createElement("div");
   div.classList.add("message");
   div.setAttribute("data-message-id", messageId);
+
+  // Show the sender's name
+  const senderSpan = document.createElement("span");
+  senderSpan.classList.add("message-sender");
+  senderSpan.textContent = sender;
+  div.appendChild(senderSpan);
+
+  // Show the timestamp
+  const timestampSpan = document.createElement("span");
+  timestampSpan.classList.add("message-timestamp");
+  timestampSpan.textContent = formatTimestamp(timestamp);
+  div.appendChild(timestampSpan);
+
+  // Show the message content or image
+  if (isImage) {
+    const imageElement = document.createElement("img");
+    imageElement.classList.add("message-image");
+    imageElement.src = message;
+    imageElement.alt = "Sent Image";
+    div.appendChild(imageElement);
+  } else {
+    const contentParagraph = document.createElement("p");
+    contentParagraph.classList.add("message-content");
+    contentParagraph.textContent = message;
+    div.appendChild(contentParagraph);
+  }
+
+  // Show the recipients' names (comma-separated if multiple recipients)
+  if (recipients.length > 0) {
+    const recipientsSpan = document.createElement("span");
+    recipientsSpan.classList.add("message-recipients");
+    recipientsSpan.textContent = `To: ${recipients.join(", ")}`;
+    div.appendChild(recipientsSpan);
+  }
+
   // Set the unique data attribute "data-message-id" on the message container
   div.setAttribute("data-message-id", messageId);
   div.innerHTML = `
@@ -74,6 +116,7 @@ function displayMessage(message, sender, timestamp, isRead, isImage = false) {
             <span class="message-read-indicator">${readIndicator}</span>
         `;
   }
+  // Add delete button for the message (only for messages sent by the current user)
   if (sender === currentUser) {
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "Delete";
