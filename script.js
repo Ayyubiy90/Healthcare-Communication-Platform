@@ -84,7 +84,15 @@ function displayMessage(message, sender, timestamp, isRead, isImage = false) {
       deleteMessage(messageId);
     });
   }
+  // Check if the user is already viewing the latest messages (scrolled to the bottom)
+  const isAtBottom =
+    chatMessages.scrollHeight - chatMessages.clientHeight <=
+    chatMessages.scrollTop + 1;
   chatMessages.appendChild(div);
+  // Only auto-scroll if the user is already viewing the latest messages
+  if (isAtBottom) {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
   // Scroll to the bottom to show the latest messages
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -122,7 +130,24 @@ function handleEdit(messageId, newContent) {
   );
   if (messageContainer) {
     const messageContent = messageContainer.querySelector(".message-content");
-    messageContent.textContent = newContent;
+    const currentContent = messageContent.textContent;
+
+    // Show a confirmation dialog before proceeding with the edit
+    const isConfirmed = window.confirm("Do you want to edit this message?");
+    if (isConfirmed) {
+      // Update the message content and emit the edited message to the WebSocket server
+      messageContent.textContent = newContent;
+      const data = {
+        editMessage: {
+          messageId,
+          content: newContent,
+        },
+      };
+      socket.send(JSON.stringify(data));
+    } else {
+      // If the user cancels the edit, revert the message content back to the original
+      messageContent.textContent = currentContent;
+    }
   }
 }
 
