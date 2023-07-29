@@ -112,3 +112,21 @@ function formatTimestamp() {
   const minutes = now.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
 }
+
+// Function to handle user typing status
+let typingTimer;
+const TYPING_INTERVAL = 1000; // Time in milliseconds
+const isTypingIndicator = document.getElementById("is-typing-indicator");
+
+function handleTyping() {
+  // Show "typing" indicator
+  isTypingIndicator.textContent = "Typing...";
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => {
+    // Hide "typing" indicator after a certain interval
+    isTypingIndicator.textContent = "";
+  }, TYPING_INTERVAL);
+}
+
+// Event listener for typing detection
+chatForm.addEventListener("input", handleTyping);

@@ -63,3 +63,8 @@ ul {
 ul li {
   margin-bottom: 0.5rem;
 }
+
+#is-typing-indicator {
+  color: #aaa;
+  font-style: italic;
+}
