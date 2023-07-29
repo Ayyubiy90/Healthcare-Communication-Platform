@@ -43,6 +43,8 @@ loginForm.addEventListener("submit", (event) => {
 function displayMessage(message, sender, timestamp, isRead, isImage = false) {
   const div = document.createElement("div");
   div.classList.add("message");
+  // Set the unique data attribute "data-message-id" on the message container
+  div.setAttribute("data-message-id", messageId);
   div.innerHTML = `
         <span class="message-sender">${sender}</span>
         <span class="message-timestamp">${timestamp}</span>
@@ -76,6 +78,45 @@ function displayMessage(message, sender, timestamp, isRead, isImage = false) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Function to handle message editing
+function handleEdit(messageId, newContent) {
+  const messageContainer = chatMessages.querySelector(
+    `[data-message-id="${messageId}"]`
+  );
+  if (messageContainer) {
+    const messageContent = messageContainer.querySelector(".message-content");
+    messageContent.textContent = newContent;
+  }
+}
+
+// WebSocket event listener for receiving edited messages
+socket.addEventListener("message", (event) => {
+  const data = JSON.parse(event.data);
+  if (data.editMessage) {
+    const { messageId, content } = data.editMessage;
+    handleEdit(messageId, content);
+  }
+});
+
+// Function to handle message deletion
+function handleDelete(event) {
+  const messageContainer = event.target.closest(".message");
+  const messageId = messageContainer.dataset.messageId;
+
+  // Emit the message ID to the WebSocket server for deletion
+  socket.send(JSON.stringify({ deleteMessage: messageId }));
+
+  // Remove the message container from the DOM
+  messageContainer.remove();
+}
+
+// Event listener for message deletion
+chatMessages.addEventListener("click", (event) => {
+  if (event.target.classList.contains("delete-button")) {
+    handleDelete(event);
+  }
+});
+
 // Function to handle errors and display error messages
 function displayError(message) {
   const div = document.createElement("div");
@@ -83,6 +124,15 @@ function displayError(message) {
   div.textContent = message;
   chatMessages.appendChild(div);
 }
+
+// WebSocket event listener for receiving edited messages
+socket.addEventListener("message", (event) => {
+  const data = JSON.parse(event.data);
+  if (data.editMessage) {
+    const { messageId, content } = data.editMessage;
+    handleEdit(messageId, content);
+  }
+});
 
 // WebSocket connection (to be implemented in the backend)
 const socket = new WebSocket("ws://localhost:8080");
