@@ -86,6 +86,17 @@ function displayMessage(
     div.appendChild(recipientsSpan);
   }
 
+  // Show message status indicator(s)
+  const statusIndicatorSpan = document.createElement("span");
+  statusIndicatorSpan.classList.add("message-status-indicator");
+
+  // Show one checkmark if the message has been delivered
+  const deliveredIndicator = document.createElement("span");
+  deliveredIndicator.textContent = isRead ? "✔️✔️" : "✔️";
+  statusIndicatorSpan.appendChild(deliveredIndicator);
+
+  div.appendChild(statusIndicatorSpan);
+
   // Set the unique data attribute "data-message-id" on the message container
   div.setAttribute("data-message-id", messageId);
   div.innerHTML = `
@@ -202,17 +213,65 @@ function deleteMessage(messageId) {
   socket.send(JSON.stringify(data));
 }
 
-// WebSocket event listener for receiving edited messages
+// WebSocket event listener for receiving real-time updates
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
+
   if (data.editMessage) {
+    // If the received data contains an 'editMessage' property, it means a message was edited.
+    // Extract the 'messageId' and 'content' from the 'editMessage' object.
     const { messageId, content } = data.editMessage;
+    // Call the 'handleEdit' function with the extracted 'messageId' and 'content' as arguments.
     handleEdit(messageId, content);
   } else if (data.deleteMessage) {
+    // If the received data contains a 'deleteMessage' property, it means a message was deleted.
+    // Extract the 'messageId' from the 'deleteMessage' object.
     const messageId = data.deleteMessage;
+    // Call the 'handleDelete' function with the extracted 'messageId' as an argument.
     handleDelete(messageId);
+  } else if (data.messageStatus) {
+    // If the received data contains a 'messageStatus' property, it means a message status update.
+    // Extract the 'messageId' and 'isRead' from the 'messageStatus' object.
+    const { messageId, isRead } = data.messageStatus;
+    // Call the 'updateMessageStatus' function with the extracted 'messageId' and 'isRead' as arguments.
+    updateMessageStatus(messageId, isRead);
+  } else if (data.userTyping) {
+    // If the received data contains a 'userTyping' property, it means a user's typing status update.
+    // Extract the 'username' and 'typing' from the 'userTyping' object.
+    const { username, typing } = data.userTyping;
+    // Call the 'handleTyping' function with the extracted 'username' and 'typing' as arguments.
+    handleTyping(username, typing);
+  } else if (data.newMessage) {
+    // If the received data contains a 'newMessage' property, it means a new message is received.
+    // Extract the 'message', 'sender', 'timestamp', and 'isImage' from the 'newMessage' object.
+    const { message, sender, timestamp, isImage, messageId } = data.newMessage;
+    // Call the 'displayMessage' function with the extracted data as arguments to show the new message.
+    displayMessage(message, sender, timestamp, false, isImage, messageId);
+  } else if (data.newImageMessage) {
+    // If the received data contains a 'newImageMessage' property, it means a new image message is received.
+    // Extract the 'message', 'sender', 'timestamp', and 'isRead' from the 'newImageMessage' object.
+    const { message, sender, timestamp, isImage, messageId } =
+      data.newImageMessage;
+    // Call the 'displayMessage' function with the extracted data as arguments to show the new image message.
+    displayMessage(message, sender, timestamp, false, isImage, messageId);
   }
 });
+
+// Function to update message status
+function updateMessageStatus(messageId, isRead) {
+  const messageContainer = chatMessages.querySelector(
+    `[data-message-id="${messageId}"]`
+  );
+  if (messageContainer) {
+    const statusIndicator = messageContainer.querySelector(
+      ".message-status-indicator"
+    );
+    if (statusIndicator) {
+      // Update the message status indicator
+      statusIndicator.textContent = isRead ? "✔️✔️" : "✔️";
+    }
+  }
+}
 
 // Function to handle message deletion
 function handleDelete(event) {
@@ -241,14 +300,14 @@ function displayError(message) {
   chatMessages.appendChild(div);
 }
 
-// WebSocket event listener for receiving edited messages
-socket.addEventListener("message", (event) => {
-  const data = JSON.parse(event.data);
-  if (data.editMessage) {
-    const { messageId, content } = data.editMessage;
-    handleEdit(messageId, content);
-  }
-});
+// // WebSocket event listener for receiving edited messages
+// socket.addEventListener("message", (event) => {
+//   const data = JSON.parse(event.data);
+//   if (data.editMessage) {
+//     const { messageId, content } = data.editMessage;
+//     handleEdit(messageId, content);
+//   }
+// });
 
 // WebSocket connection (to be implemented in the backend)
 const socket = new WebSocket("ws://localhost:8080");
