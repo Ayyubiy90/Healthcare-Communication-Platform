@@ -130,3 +130,28 @@ function handleTyping() {
 
 // Event listener for typing detection
 chatForm.addEventListener("input", handleTyping);
+
+// Add this code to the end of the script.js file
+const imageInput = document.getElementById("image-input");
+const sendImageButton = document.getElementById("send-image-button");
+
+// Function to handle image selection and sending
+sendImageButton.addEventListener("click", () => {
+  imageInput.click(); // Trigger the hidden file input
+});
+
+imageInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // Read the image file as data URL
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      // Emit the image data to the WebSocket server
+      socket.send(JSON.stringify({ image: reader.result }));
+    };
+    reader.onerror = () => {
+      displayError("Error: Failed to read the selected image.");
+    };
+  }
+});
