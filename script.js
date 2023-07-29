@@ -147,7 +147,13 @@ function displayMessage(
   if (isAtBottom) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
+  scrollToBottom();
   // Scroll to the bottom to show the latest messages
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Function to scroll the chat messages container to the bottom
+function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
@@ -351,6 +357,9 @@ chatForm.addEventListener("submit", (event) => {
   // Emit the message to the WebSocket server
   socket.send(JSON.stringify({ message }));
   messageInput.value = ""; // Clear the input field after sending the message
+
+  // Clear the message input field after sending
+  event.target.reset();
 });
 
 // Function to format timestamp for messages
@@ -376,12 +385,24 @@ sendImageButton.addEventListener("click", () => {
 imageInput.addEventListener("change", (event) => {
   const file = event.target.files[0];
   if (file) {
-    // Read the image file as data URL
+    // Read the image file as a data URL
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
+      // Display the selected image as a preview
+      const imagePreview = document.createElement("img");
+      imagePreview.src = reader.result;
+      imagePreview.alt = "Selected Image";
+      chatMessages.appendChild(imagePreview);
+
+      // Scroll to the bottom to show the latest messages and the image preview
+      scrollToBottom();
+
       // Emit the image data to the WebSocket server
       socket.send(JSON.stringify({ image: reader.result }));
+
+      // Clear the file input to allow selecting the same image again
+      event.target.value = "";
     };
     reader.onerror = () => {
       displayError("Error: Failed to read the selected image.");
