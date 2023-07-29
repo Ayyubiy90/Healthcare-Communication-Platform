@@ -1,29 +1,79 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Healthcare Communication Platform</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <header>
-        <!-- Add your site logo and navigation menu here -->
+        <h1>Welcome to the Healthcare Communication Platform</h1>
+        <!-- Add a navigation menu if needed -->
     </header>
 
     <main>
         <section class="welcome-section">
-            <!-- Add a welcome message and introduction here -->
+            <h2>About Us</h2>
+            <p>
+                Welcome to our platform, dedicated to improving communication among healthcare providers,
+                patients, and caregivers. We aim to enhance patient care and make healthcare collaboration
+                more efficient and secure.
+            </p>
         </section>
 
         <section class="communication-section">
-            <!-- Add the communication features and components here -->
+            <h2>Features</h2>
+            <ul>
+                <li>Real-time messaging</li>
+                <li>Video conferencing</li>
+                <li>File sharing</li>
+                <li>Secure patient information exchange</li>
+            </ul>
+
+            <h2>User Registration</h2>
+            <form id="registration-form">
+                <label for="username">Username:</label>
+                <input type="text" id="username" required>
+
+                <label for="email">Email:</label>
+                <input type="email" id="email" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" required>
+
+                <button type="submit">Register</button>
+            </form>
+
+            <h2>User Login</h2>
+            <form id="login-form">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" required>
+
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+
+                <button type="submit">Login</button>
+
+                <h2>Real-Time Messaging</h2>
+                <div class="chat-container">
+                    <div class="chat-messages">
+                        <!-- Display incoming and outgoing messages here -->
+                    </div>
+                    <form id="chat-form">
+                        <input type="text" id="message-input" placeholder="Type your message...">
+                        <button type="submit">Send</button>
+                    </form>
+                </div>
+            </form>
         </section>
     </main>
 
     <footer>
-        <!-- Add footer content, such as copyright information -->
+        <p>&copy; 2023 Healthcare Communication Platform. All rights reserved.</p>
     </footer>
 
     <script src="script.js"></script>
 </body>
+
 </html>
