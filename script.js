@@ -40,10 +40,14 @@ loginForm.addEventListener("submit", (event) => {
 });
 
 // Function to display incoming and outgoing messages in the chat box
-function displayMessage(message, sender) {
+function displayMessage(message, sender, timestamp) {
   const div = document.createElement("div");
   div.classList.add("message");
-  div.innerHTML = `<strong>${sender}:</strong> ${message}`;
+  div.innerHTML = `
+        <span class="message-sender">${sender}</span>
+        <span class="message-timestamp">${timestamp}</span>
+        <p class="message-content">${message}</p>
+    `;
   chatMessages.appendChild(div);
   // Scroll to the bottom to show the latest messages
   chatMessages.scrollTop = chatMessages.scrollHeight;
