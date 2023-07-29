@@ -78,6 +78,32 @@ function displayMessage(message, sender, timestamp, isRead, isImage = false) {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+const isTypingIndicator = document.getElementById("is-typing-indicator");
+
+// Function to handle typing indicator
+function showTypingIndicator(sender) {
+  isTypingIndicator.textContent = `${sender} is typing...`;
+}
+
+function hideTypingIndicator() {
+  isTypingIndicator.textContent = "";
+}
+
+// Event listener for detecting typing
+let typingTimeout;
+
+messageInput.addEventListener("input", () => {
+  const message = messageInput.value;
+  if (message) {
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      hideTypingIndicator();
+    }, 1000); // Set an appropriate delay before hiding the typing indicator
+  } else {
+    showTypingIndicator("Someone");
+  }
+});
+
 // Function to handle message editing
 function handleEdit(messageId, newContent) {
   const messageContainer = chatMessages.querySelector(
@@ -184,21 +210,6 @@ function formatTimestamp() {
   const hours = now.getHours().toString().padStart(2, "0");
   const minutes = now.getMinutes().toString().padStart(2, "0");
   return `${hours}:${minutes}`;
-}
-
-// Function to handle user typing status
-let typingTimer;
-const TYPING_INTERVAL = 1000; // Time in milliseconds
-const isTypingIndicator = document.getElementById("is-typing-indicator");
-
-function handleTyping() {
-  // Show "typing" indicator
-  isTypingIndicator.textContent = "Typing...";
-  clearTimeout(typingTimer);
-  typingTimer = setTimeout(() => {
-    // Hide "typing" indicator after a certain interval
-    isTypingIndicator.textContent = "";
-  }, TYPING_INTERVAL);
 }
 
 // Event listener for typing detection
