@@ -43,6 +43,7 @@ loginForm.addEventListener("submit", (event) => {
 function displayMessage(message, sender, timestamp, isRead, isImage = false) {
   const div = document.createElement("div");
   div.classList.add("message");
+  div.setAttribute("data-message-id", messageId);
   // Set the unique data attribute "data-message-id" on the message container
   div.setAttribute("data-message-id", messageId);
   div.innerHTML = `
@@ -72,6 +73,16 @@ function displayMessage(message, sender, timestamp, isRead, isImage = false) {
             <p class="message-content">${message}</p>
             <span class="message-read-indicator">${readIndicator}</span>
         `;
+  }
+  if (sender === currentUser) {
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add("delete-button");
+    div.appendChild(deleteButton);
+
+    deleteButton.addEventListener("click", () => {
+      deleteMessage(messageId);
+    });
   }
   chatMessages.appendChild(div);
   // Scroll to the bottom to show the latest messages
@@ -115,12 +126,23 @@ function handleEdit(messageId, newContent) {
   }
 }
 
+function deleteMessage(messageId) {
+  // Send a WebSocket message to the server to delete the message
+  const data = {
+    deleteMessage: messageId,
+  };
+  socket.send(JSON.stringify(data));
+}
+
 // WebSocket event listener for receiving edited messages
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
   if (data.editMessage) {
     const { messageId, content } = data.editMessage;
     handleEdit(messageId, content);
+  } else if (data.deleteMessage) {
+    const messageId = data.deleteMessage;
+    handleDelete(messageId);
   }
 });
 
