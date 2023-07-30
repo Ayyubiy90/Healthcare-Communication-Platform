@@ -3,6 +3,7 @@ const registrationForm = document.getElementById("registration-form");
 const loginForm = document.getElementById("login-form");
 const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
+const userList = document.getElementById("user-list");
 
 registrationForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -422,6 +423,72 @@ chatMessages.addEventListener("click", (event) => {
     messageContainer.remove();
   }
 });
+
+// Sample users array with online status
+let users = [
+  { username: "John Doe", online: false },
+  { username: "Jane Smith", online: true },
+  // Add more users as needed
+];
+
+// Function to display the list of users with their online status
+function displayUsers() {
+  // Clear the user list
+  userList.innerHTML = "";
+
+  // Create and append user list items with online status indicator
+  users.forEach((user) => {
+    const userItem = document.createElement("li");
+    userItem.textContent = user.username;
+
+    // Create and append the online status indicator
+    const statusIndicator = document.createElement("span");
+    statusIndicator.classList.add("user-status-indicator");
+    statusIndicator.textContent = user.online ? "Online" : "Offline";
+    userItem.appendChild(statusIndicator);
+
+    // Append the user item to the user list
+    userList.appendChild(userItem);
+  });
+}
+
+// Call the displayUsers function to initially display the users
+displayUsers();
+
+// Sample function to simulate user login
+function simulateUserLogin(username) {
+  // Check if the user is already in the users array
+  const existingUser = users.find((user) => user.username === username);
+  if (existingUser) {
+    // Update the online status to true (user is logged in)
+    existingUser.online = true;
+  } else {
+    // Add the new user to the users array with online status true
+    users.push({ username, online: true });
+  }
+
+  // Update the user list display
+  displayUsers();
+}
+
+// Sample function to simulate user logout
+function simulateUserLogout(username) {
+  // Find the user in the users array
+  const user = users.find((user) => user.username === username);
+  if (user) {
+    // Update the online status to false (user is logged out)
+    user.online = false;
+  }
+
+  // Update the user list display
+  displayUsers();
+}
+
+// Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
+simulateUserLogin("John Doe"); // Simulate John Doe logging in
+simulateUserLogout("John Doe"); // Simulate John Doe logging out
+
+// The rest of your JavaScript code...
 
 // script.js
 // ... (existing code)
