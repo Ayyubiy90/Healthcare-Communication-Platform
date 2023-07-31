@@ -280,6 +280,84 @@ function updateUserProfile(username, email) {
   emailParagraph.textContent = `Email: ${email}`;
 }
 
+// Function to handle user profile edit
+function handleProfileEdit() {
+  // Get the current user profile information
+  const userProfile = document.querySelector(".user-profile");
+  const usernameParagraph = userProfile.querySelector(".username");
+  const emailParagraph = userProfile.querySelector(".email");
+
+  // Get the current username and email
+  const currentUsername = usernameParagraph.textContent.split(": ")[1];
+  const currentEmail = emailParagraph.textContent.split(": ")[1];
+
+  // Prompt the user to enter new username and email
+  const newUsername = prompt("Enter new username:", currentUsername);
+  const newEmail = prompt("Enter new email:", currentEmail);
+
+  // Check if the user provided new username and email and they are not the same as the current values
+  if (
+    newUsername !== null &&
+    newEmail !== null &&
+    (newUsername !== currentUsername || newEmail !== currentEmail)
+  ) {
+    // Emit the updated user profile information to the WebSocket server
+    const data = {
+      userProfileUpdate: {
+        username: newUsername,
+        email: newEmail,
+      },
+    };
+    socket.send(JSON.stringify(data));
+
+    // Update the displayed user profile with the new information
+    updateUserProfile(newUsername, newEmail);
+  }
+}
+
+// Event listener for user profile edit button
+const editProfileButton = document.querySelector(".edit-profile-button");
+editProfileButton.addEventListener("click", handleProfileEdit);
+
+// Function to handle password change
+function handleChangePassword() {
+  // Prompt the user to enter the current password and new password
+  const currentPassword = prompt("Enter current password:");
+  const newPassword = prompt("Enter new password:");
+
+  // Check if the user provided both the current password and new password
+  if (currentPassword !== null && newPassword !== null) {
+    // You can add additional logic here to validate the password and perform the password change API call
+    // For example: axios.post('/api/change-password', { currentPassword, newPassword })
+    // .then((response) => {
+    //   // Handle successful password change
+    // })
+    // .catch((error) => {
+    //   // Handle password change error
+    // });
+  }
+}
+
+// Event listener for password change button
+const changePasswordButton = document.querySelector(".change-password-button");
+changePasswordButton.addEventListener("click", handleChangePassword);
+
+// Function to handle notification settings change
+function handleNotificationSettingsChange() {
+  // You can add logic here to handle the notification settings change
+  // For example, you can use checkboxes or dropdowns to allow users to customize their notification preferences
+  // After the user updates the settings, you can emit the changes to the WebSocket server and handle them on the backend
+}
+
+// Event listener for notification settings change
+const notificationSettingsButton = document.querySelector(
+  ".notification-settings-button"
+);
+notificationSettingsButton.addEventListener(
+  "click",
+  handleNotificationSettingsChange
+);
+
 // Function to handle user profile update event from WebSocket
 function handleUserProfileUpdate(username, email) {
   updateUserProfile(username, email);
