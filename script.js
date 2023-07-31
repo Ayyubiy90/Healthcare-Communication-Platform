@@ -569,6 +569,24 @@ editProfileButton.addEventListener("click", () => {
   }
 });
 
+// Function to open the edit profile modal/form
+function openEditProfileModal() {
+  // Implement logic to display the modal or form for editing profile details
+  // For example, you can show a modal with input fields for username and email
+}
+
+// Function to open the change password modal/form
+function openChangePasswordModal() {
+  // Implement logic to display the modal or form for changing the password
+  // For example, you can show a modal with input fields for old and new passwords
+}
+
+// Function to open the notification settings modal/form
+function openNotificationSettingsModal() {
+  // Implement logic to display the modal or form for managing notification settings
+  // For example, you can show a modal with checkboxes to enable/disable notifications
+}
+
 // Function to handle password change
 function handleChangePassword() {
   // Prompt the user to enter the current password and new password
@@ -685,6 +703,8 @@ chatMessages.addEventListener("click", (event) => {
   }
 });
 
+const errorContainer = document.getElementById("error-container");
+
 // Function to handle errors and display error messages
 function displayError(message) {
   const div = document.createElement("div");
@@ -693,14 +713,19 @@ function displayError(message) {
   chatMessages.appendChild(div);
 }
 
-// // WebSocket event listener for receiving edited messages
-// socket.addEventListener("message", (event) => {
-//   const data = JSON.parse(event.data);
-//   if (data.editMessage) {
-//     const { messageId, content } = data.editMessage;
-//     handleEdit(messageId, content);
-//   }
-// });
+// WebSocket event listener for WebSocket connection errors
+socket.addEventListener("error", (event) => {
+  console.error("WebSocket connection error:", event);
+  displayError("Error: Failed to establish WebSocket connection.");
+});
+
+// WebSocket event listener for WebSocket connection closed
+socket.addEventListener("close", (event) => {
+  console.warn("WebSocket connection closed:", event);
+  displayError(
+    "WebSocket connection closed. Please refresh the page to reconnect."
+  );
+});
 
 // WebSocket connection (to be implemented in the backend)
 const socket = new WebSocket("ws://localhost:8080");
@@ -996,21 +1021,22 @@ chatMessages.addEventListener("click", (event) => {
 
 // Function to handle message deletion
 function handleDelete(event) {
-  const deleteButton = event.target.closest(".delete-button");
-  if (deleteButton) {
-    const messageContainer = deleteButton.closest(".message");
-    const messageId = messageContainer.dataset.messageId;
+  const messageContainer = event.target.closest(".message");
+  const messageId = messageContainer.dataset.messageId;
 
-    // Show a confirmation dialog before proceeding with the delete
-    const isConfirmed = window.confirm("Do you want to delete this message?");
-    if (isConfirmed) {
-      // Emit the message ID to the WebSocket server for deletion
-      socket.send(JSON.stringify({ deleteMessage: messageId }));
-      // Remove the message container from the display
-      messageContainer.remove();
-    }
-  }
+  // Emit the message ID to the WebSocket server for deletion
+  socket.send(JSON.stringify({ deleteMessage: messageId }));
+
+  // Remove the message container from the DOM
+  messageContainer.remove();
 }
+
+// Event listener for message deletion
+chatMessages.addEventListener("click", (event) => {
+  if (event.target.classList.contains("delete-button")) {
+    handleDelete(event);
+  }
+});
 
 // Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
 simulateUserLogin("John Doe"); // Simulate John Doe logging in

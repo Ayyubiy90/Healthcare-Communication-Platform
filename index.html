@@ -73,9 +73,11 @@
                             <span class="message-sender">John Doe</span>
                             <span class="message-timestamp">12:34</span>
                             <p class="message-content">Hello, everyone!</p>
+                            <span class="message-status-indicator">✔️</span>
                             <button class="delete-button">Delete</button>
                             <button class="edit-button">Edit</button>
                         </div>
+
                     </div>
                     <form id="chat-form">
                         <input type="text" id="message-input" placeholder="Type your message...">
@@ -85,6 +87,7 @@
                             <input type="text" id="reply-input" placeholder="Type your reply...">
                             <button type="button" id="cancel-reply-button">Cancel</button>
                         </div>
+                        <div id="error-container"></div>
                     </form>
                     <!-- Add a timestamp element inside the message container -->
                     <span class="message-timestamp"></span>
