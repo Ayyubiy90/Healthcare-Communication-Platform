@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("http");
 const WebSocket = require("ws");
+const websocketServer = require("./websocketServer"); // Import the custom WebSocket server module
 
 const app = express();
 const server = http.createServer(app);
@@ -28,6 +29,9 @@ function broadcastUserList() {
     }
   });
 }
+
+// Start the WebSocket server
+websocketServer.start(server);
 
 // WebSocket connection handling
 wss.on("connection", (ws) => {
