@@ -132,6 +132,10 @@ function displayMessage(
   timestampSpan.textContent = formatTimestamp(timestamp);
   div.appendChild(timestampSpan);
 
+  // Parse the message for emojis using twemoji
+  const parsedMessage = twemoji.parse(message);
+  contentParagraph.innerHTML = parsedMessage;
+
   // Show the message content or image
   if (isImage) {
     const imageElement = document.createElement("img");
@@ -983,22 +987,21 @@ chatMessages.addEventListener("click", (event) => {
 
 // Function to handle message deletion
 function handleDelete(event) {
-  const messageContainer = event.target.closest(".message");
-  const messageId = messageContainer.dataset.messageId;
+  const deleteButton = event.target.closest(".delete-button");
+  if (deleteButton) {
+    const messageContainer = deleteButton.closest(".message");
+    const messageId = messageContainer.dataset.messageId;
 
-  // Emit the message ID to the WebSocket server for deletion
-  socket.send(JSON.stringify({ deleteMessage: messageId }));
-
-  // Remove the message container from the DOM
-  messageContainer.remove();
-}
-
-// Event listener for message deletion
-chatMessages.addEventListener("click", (event) => {
-  if (event.target.classList.contains("delete-button")) {
-    handleDelete(event);
+    // Show a confirmation dialog before proceeding with the delete
+    const isConfirmed = window.confirm("Do you want to delete this message?");
+    if (isConfirmed) {
+      // Emit the message ID to the WebSocket server for deletion
+      socket.send(JSON.stringify({ deleteMessage: messageId }));
+      // Remove the message container from the display
+      messageContainer.remove();
+    }
   }
-});
+}
 
 // Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
 simulateUserLogin("John Doe"); // Simulate John Doe logging in
