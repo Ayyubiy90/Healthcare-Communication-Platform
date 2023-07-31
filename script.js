@@ -261,13 +261,22 @@ function displayMessage(
     }
   }
 
-  // Event listener for message reactions
+  // Event listener for message editing
   chatMessages.addEventListener("click", (event) => {
-    const target = event.target;
-    if (target.classList.contains("message-reaction")) {
-      const messageId = target.closest(".message").dataset.messageId;
-      const reaction = target.textContent;
-      handleReactions(messageId, reaction);
+    if (event.target.classList.contains("edit-button")) {
+      const messageContainer = event.target.closest(".message");
+      const messageContent = messageContainer.querySelector(".message-content");
+      const originalMessage = messageContent.textContent.trim();
+      const newMessage = prompt("Edit your message:", originalMessage);
+      if (newMessage !== null && newMessage !== originalMessage) {
+        // Emit the edited message to the WebSocket server
+        const messageId = messageContainer.dataset.messageId;
+        socket.send(
+          JSON.stringify({ editMessage: { messageId, content: newMessage } })
+        );
+        // Update the displayed message with the edited content
+        messageContent.textContent = newMessage;
+      }
     }
   });
 
