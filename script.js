@@ -193,6 +193,18 @@ function displayMessage(
     });
   }
 
+  // Function to format timestamp for messages
+  function formatTimestamp(timestamp) {
+    const options = {
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(timestamp).toLocaleString(undefined, options);
+  }
+
   // Function to handle message deletion
   function deleteMessage(messageId) {
     // Emit the message ID to the WebSocket server for deletion
@@ -212,6 +224,15 @@ function displayMessage(
   // Scroll to the bottom to show the latest messages
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// Get the clear chat button element
+const clearChatButton = document.getElementById("clear-chat-button");
+
+// Event listener for the clear chat button
+clearChatButton.addEventListener("click", () => {
+  // Remove all messages from the chat container
+  chatMessages.innerHTML = "";
+});
 
 // Function to scroll the chat messages container to the bottom
 function scrollToBottom() {
@@ -317,7 +338,21 @@ function handleProfileEdit() {
 
 // Event listener for user profile edit button
 const editProfileButton = document.querySelector(".edit-profile-button");
-editProfileButton.addEventListener("click", handleProfileEdit);
+// Event listener for the edit profile button
+editProfileButton.addEventListener("click", () => {
+  const newUsername = prompt("Enter your new username:");
+  const newEmail = prompt("Enter your new email:");
+
+  // Update the displayed username and email
+  const usernameElement = document.querySelector(".username");
+  const emailElement = document.querySelector(".email");
+  if (newUsername) {
+    usernameElement.textContent = newUsername;
+  }
+  if (newEmail) {
+    emailElement.textContent = newEmail;
+  }
+});
 
 // Function to handle password change
 function handleChangePassword() {
