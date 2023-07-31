@@ -123,3 +123,42 @@ ul li {
   font-style: italic;
   margin-top: 4px;
 }
+
+/* Add appropriate styles for the profile buttons */
+.edit-profile-button,
+.change-password-button,
+.notification-settings-button {
+  margin-right: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Style the user profile section as needed */
+.user-profile {
+  margin-top: 20px;
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 4px;
+}
+
+/* Style the username and email paragraphs */
+.user-profile p {
+  margin: 5px 0;
+}
+
+/* Style the username and email spans */
+.username,
+.email {
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Style the typing indicator */
+#is-typing-indicator {
+  color: #007bff;
+  font-style: italic;
+}
