@@ -1,63 +1,122 @@
+// websocketServer.js
+
+const WebSocket = require("ws");
+
+const wss = new WebSocket.Server({ noServer: true });
+
+const activeUsers = new Set();
+
+// Function to broadcast a message to all connected clients
+function broadcastMessage(message) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
+
+// Function to handle WebSocket connections
+function handleWebSocketConnection(ws, req) {
+  // Add the user's WebSocket connection to the activeUsers set
+  activeUsers.add(ws);
+
+  // Event listener for incoming messages from clients
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+      // Broadcast the received message to all connected clients
+      broadcastMessage(data);
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  // Event listener for WebSocket connection closed
+  ws.on("close", () => {
+    // Remove the user's WebSocket connection from the activeUsers set
+    activeUsers.delete(ws);
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+}
+
+// Function to start the WebSocket server
+function start(server) {
+  // Attach the WebSocket server to the existing HTTP server
+  server.on("upgrade", (request, socket, head) => {
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
+  });
+
+  // Event listener for WebSocket connections
+  wss.on("connection", handleWebSocketConnection);
+}
+
+module.exports = {
+  start,
+};
+
 // Function to update user online status
 function updateUserOnlineStatus(username, online) {
-    const userIndex = users.findIndex((user) => user.username === username);
-    if (userIndex !== -1) {
-      users[userIndex].online = online;
-      broadcastUserList();
-    }
+  const userIndex = users.findIndex((user) => user.username === username);
+  if (userIndex !== -1) {
+    users[userIndex].online = online;
+    broadcastUserList();
   }
-  
-  // Function to handle user login
-  function handleUserLogin(username) {
-    // Check if the user is already in the users array
-    const existingUser = users.find((user) => user.username === username);
-    if (existingUser) {
-      // Update the user's online status to true (user is logged in)
-      updateUserOnlineStatus(username, true);
-    } else {
-      // Add the new user to the users array with online status true
-      users.push({ username, online: true });
-      broadcastUserList();
-    }
+}
+
+// Function to handle user login
+function handleUserLogin(username) {
+  // Check if the user is already in the users array
+  const existingUser = users.find((user) => user.username === username);
+  if (existingUser) {
+    // Update the user's online status to true (user is logged in)
+    updateUserOnlineStatus(username, true);
+  } else {
+    // Add the new user to the users array with online status true
+    users.push({ username, online: true });
+    broadcastUserList();
   }
-  
-  // Function to handle user logout
-  function handleUserLogout(username) {
-    // Update the user's online status to false (user is logged out)
-    updateUserOnlineStatus(username, false);
-  }
-  
-  // WebSocket connection handling
-  wss.on("connection", (ws) => {
-    // Event listener for incoming messages from clients
-    ws.on("message", (message) => {
-      try {
-        const data = JSON.parse(message);
-        // Handle different types of messages here
-        // For example, if you receive a new message from a client:
-        // if (data.type === "newMessage") {
-        //   // Process the new message and broadcast it to all connected clients
-        //   // ...
-        // }
-  
-        // Handle user login
-        if (data.type === "login") {
-          const { username } = data;
-          handleUserLogin(username);
-        }
-      } catch (error) {
-        console.error("Error handling WebSocket message:", error);
+}
+
+// Function to handle user logout
+function handleUserLogout(username) {
+  // Update the user's online status to false (user is logged out)
+  updateUserOnlineStatus(username, false);
+}
+
+// WebSocket connection handling
+wss.on("connection", (ws) => {
+  // Event listener for incoming messages from clients
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+      // Handle different types of messages here
+      // For example, if you receive a new message from a client:
+      // if (data.type === "newMessage") {
+      //   // Process the new message and broadcast it to all connected clients
+      //   // ...
+      // }
+
+      // Handle user login
+      if (data.type === "login") {
+        const { username } = data;
+        handleUserLogin(username);
       }
-    });
-  
-    // Event listener for WebSocket connection closed
-    ws.on("close", () => {
-      console.log("WebSocket connection closed");
-      // Perform any cleanup or handling when a client disconnects
-      // For example, update the user's online status in the users array and broadcast the updated user list
-      // ...
-    });
-  });  
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  // Event listener for WebSocket connection closed
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+    // For example, update the user's online status in the users array and broadcast the updated user list
+    // ...
+  });
+});
 
 // Sample users array with online status
 let users = [
