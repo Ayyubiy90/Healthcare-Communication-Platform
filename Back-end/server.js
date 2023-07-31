@@ -242,6 +242,43 @@ app.put("/api/updateNotificationSettings", (req, res) => {
   res.json(result);
 });
 
+// Function to handle accepting or rejecting friend requests
+function handleFriendRequest(receiverUsername, senderUsername, accept) {
+  // Find the users with the given usernames
+  const receiver = findUserByUsername(receiverUsername);
+  const sender = findUserByUsername(senderUsername);
+
+  if (receiver && sender) {
+    // Check if the friend request exists
+    if (receiver.pendingFriendRequests.includes(senderUsername)) {
+      // Remove the sender from the receiver's pending friend requests
+      receiver.pendingFriendRequests = receiver.pendingFriendRequests.filter(
+        (username) => username !== senderUsername
+      );
+
+      // Update the sender's friend list if the request is accepted
+      if (accept) {
+        sender.friends.push(receiverUsername);
+      }
+
+      return { success: true, message: "Friend request handled successfully." };
+    } else {
+      return { success: false, message: "Friend request not found." };
+    }
+  }
+
+  return { success: false, message: "User not found." };
+}
+
+// Sample API endpoint for handling friend requests
+app.put("/api/handleFriendRequest", (req, res) => {
+  const { receiverUsername, senderUsername, accept } = req.body;
+
+  // Handle friend request
+  const result = handleFriendRequest(receiverUsername, senderUsername, accept);
+  res.json(result);
+});
+
 // Start the WebSocket server
 websocketServer.start(server);
 
