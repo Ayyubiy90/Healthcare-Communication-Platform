@@ -5,7 +5,7 @@ const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
 const userList = document.getElementById("user-list");
 
-// Event listener for user registration form submission
+// Function to handle user registration
 registrationForm.addEventListener("submit", (event) => {
   event.preventDefault();
   // Get form data
@@ -15,16 +15,21 @@ registrationForm.addEventListener("submit", (event) => {
   const password = formData.get("password");
 
   // Perform user registration API call (to be implemented in the backend)
-  // Example: axios.post('/api/register', { username, email, password })
-  // .then((response) => {
-  //     // Handle successful registration
-  // })
-  // .catch((error) => {
-  //     // Handle registration error
-  // });
+  axios
+    .post("/api/register", { username, email, password })
+    .then((response) => {
+      // Handle successful registration
+      alert("Registration successful! You can now log in.");
+      // Optionally, redirect the user to the login page
+      window.location.href = "/login.html";
+    })
+    .catch((error) => {
+      // Handle registration error
+      displayError("Error: Registration failed. Please try again.");
+    });
 });
 
-// Event listener for user login form submission
+// Function to handle user login
 loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
   // Get form data
@@ -33,14 +38,39 @@ loginForm.addEventListener("submit", (event) => {
   const password = formData.get("login-password");
 
   // Perform user login API call (to be implemented in the backend)
-  // Example: axios.post('/api/login', { email, password })
-  // .then((response) => {
-  //     // Handle successful login
-  // })
-  // .catch((error) => {
-  //     // Handle login error
-  // });
+  axios
+    .post("/api/login", { email, password })
+    .then((response) => {
+      // Handle successful login
+      alert("Login successful! You are now logged in.");
+      // Optionally, redirect the user to the chat page or dashboard
+      window.location.href = "/chat.html";
+    })
+    .catch((error) => {
+      // Handle login error
+      displayError("Error: Incorrect email or password. Please try again.");
+    });
 });
+
+// Function to handle user logout (to be called when the user clicks on the logout button)
+function logout() {
+  // Perform user logout API call (to be implemented in the backend)
+  axios
+    .post("/api/logout")
+    .then((response) => {
+      // Handle successful logout
+      alert("You have been logged out.");
+      // Optionally, redirect the user to the login page
+      window.location.href = "/login.html";
+    })
+    .catch((error) => {
+      // Handle logout error
+      displayError("Error: Logout failed. Please try again.");
+    });
+}
+
+// Event listener for the logout button (assuming there is a logout button in the HTML)
+document.getElementById("logout-button").addEventListener("click", logout);
 
 // Function to display incoming and outgoing messages in the chat box
 function displayMessage(
