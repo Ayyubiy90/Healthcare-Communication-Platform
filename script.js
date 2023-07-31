@@ -269,10 +269,34 @@ function updateMessageStatus(messageId, isRead) {
   }
 }
 
+// Function to update user profile information in the DOM
+function updateUserProfile(username, email) {
+  const userProfile = document.querySelector(".user-profile");
+  const usernameParagraph = userProfile.querySelector(".username");
+  const emailParagraph = userProfile.querySelector(".email");
+
+  // Update the displayed username and email
+  usernameParagraph.textContent = `Username: ${username}`;
+  emailParagraph.textContent = `Email: ${email}`;
+}
+
+// Function to handle user profile update event from WebSocket
+function handleUserProfileUpdate(username, email) {
+  updateUserProfile(username, email);
+  // You can also add any additional logic here when the user profile is updated
+}
+
 // WebSocket event listener for receiving real-time updates
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
+  if (data.userProfileUpdate) {
+    // If the received data contains a 'userProfileUpdate' property, it means the user profile is updated.
+    // Extract the 'username' and 'email' from the 'userProfileUpdate' object.
+    const { username, email } = data.userProfileUpdate;
+    // Call the 'handleUserProfileUpdate' function with the extracted 'username' and 'email'.
+    handleUserProfileUpdate(username, email);
+  }
   if (data.userLogin) {
     // If the received data contains a 'userLogin' property, it means a user logged in.
     // Extract the 'username' from the 'userLogin' object.
