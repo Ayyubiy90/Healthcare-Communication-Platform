@@ -193,6 +193,118 @@ function displayMessage(
     });
   }
 
+  // Function to handle message reactions
+  function handleReactions(messageId, reaction) {
+    const messageContainer = chatMessages.querySelector(
+      `[data-message-id="${messageId}"]`
+    );
+    if (messageContainer) {
+      const reactionsContainer = messageContainer.querySelector(
+        ".reactions-container"
+      );
+      if (reactionsContainer) {
+        // Check if the reaction already exists
+        const existingReaction = reactionsContainer.querySelector(
+          `[data-reaction="${reaction}"]`
+        );
+        if (existingReaction) {
+          // If the reaction already exists, remove it
+          existingReaction.remove();
+        } else {
+          // If the reaction doesn't exist, add it to the reactions container
+          const reactionElement = document.createElement("span");
+          reactionElement.classList.add("message-reaction");
+          reactionElement.textContent = reaction;
+          reactionElement.setAttribute("data-reaction", reaction);
+          reactionsContainer.appendChild(reactionElement);
+        }
+      }
+    }
+  }
+
+  // Event listener for message reactions
+  chatMessages.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target.classList.contains("message-reaction")) {
+      const messageId = target.closest(".message").dataset.messageId;
+      const reaction = target.textContent;
+      handleReactions(messageId, reaction);
+    }
+  });
+
+  // Get the notification badge element
+  const notificationBadge = document.getElementById("notification-badge");
+
+  // Function to update the notification badge count
+  function updateNotificationBadge(count) {
+    notificationBadge.textContent = count;
+    notificationBadge.style.display = count > 0 ? "block" : "none";
+  }
+
+  // Example: Increment the notification badge count when a new message arrives
+  let unreadMessageCount = 0;
+
+  function onNewMessage() {
+    // Increment the unread message count
+    unreadMessageCount++;
+    // Update the notification badge
+    updateNotificationBadge(unreadMessageCount);
+  }
+
+  // Example: Reset the notification badge count when the user reads the messages
+  function markAllMessagesAsRead() {
+    // Reset the unread message count
+    unreadMessageCount = 0;
+    // Update the notification badge
+    updateNotificationBadge(unreadMessageCount);
+  }
+
+  // Get the reply input container and input elements
+  const replyInputContainer = document.getElementById("reply-input-container");
+  const replyInput = document.getElementById("reply-input");
+  const cancelReplyButton = document.getElementById("cancel-reply-button");
+
+  // Function to show the reply input field when the "Reply" button is clicked
+  function showReplyInput(messageId, sender) {
+    // Display the reply input container
+    replyInputContainer.style.display = "block";
+    // Set the input placeholder to include the sender's name
+    replyInput.placeholder = `Reply to ${sender}...`;
+    // Clear any previous reply
+    replyInput.value = "";
+
+    // Event listener for canceling the reply
+    cancelReplyButton.addEventListener("click", () => {
+      hideReplyInput();
+    });
+
+    // Event listener for submitting the reply
+    replyInput.addEventListener("keypress", (event) => {
+      if (event.key === "Enter") {
+        const replyMessage = replyInput.value.trim();
+        if (replyMessage !== "") {
+          // Send the reply message to the server (to be implemented in the backend)
+          // Example: socket.send(JSON.stringify({ replyMessage, originalMessageId: messageId }));
+
+          // Clear the reply input field
+          replyInput.value = "";
+          // Hide the reply input field
+          hideReplyInput();
+        }
+      }
+    });
+  }
+
+  // Function to hide the reply input field
+  function hideReplyInput() {
+    // Hide the reply input container
+    replyInputContainer.style.display = "none";
+    // Remove the event listeners for the cancel button
+    cancelReplyButton.removeEventListener("click", hideReplyInput);
+    // Remove the event listener for submitting the reply
+    replyInput.removeEventListener("keypress", () => {});
+  }
+
   // Function to format timestamp for messages
   function formatTimestamp(timestamp) {
     const options = {
