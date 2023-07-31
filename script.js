@@ -72,6 +72,41 @@ function logout() {
 // Event listener for the logout button (assuming there is a logout button in the HTML)
 document.getElementById("logout-button").addEventListener("click", logout);
 
+// Get the dark mode toggle button element
+const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+// Function to handle dark mode toggle
+function toggleDarkMode() {
+  document.body.classList.toggle("dark-mode");
+}
+
+// Event listener for dark mode toggle button click
+darkModeToggle.addEventListener("click", toggleDarkMode);
+
+// Function to handle user mentions
+function handleMentions(message, sender) {
+  // Extract mentioned usernames from the message
+  const mentionedUsernames = message.match(/@\w+/g);
+
+  if (mentionedUsernames) {
+    // Send a notification to mentioned users (to be implemented in the backend)
+    // Example: socket.send(JSON.stringify({ mentionedUsernames, sender }));
+
+    // Highlight the message for mentioned users
+    mentionedUsernames.forEach((username) => {
+      const mentionedMessage = `@${username}`;
+      const regex = new RegExp(mentionedMessage, "g");
+      message = message.replace(
+        regex,
+        `<span class="mentioned">@${username}</span>`
+      );
+    });
+  }
+
+  // Return the updated message
+  return message;
+}
+
 // Function to display incoming and outgoing messages in the chat box
 function displayMessage(
   message,
@@ -304,6 +339,43 @@ function displayMessage(
     // Remove the event listener for submitting the reply
     replyInput.removeEventListener("keypress", () => {});
   }
+
+  // Get the search input and button elements
+  const searchInput = document.getElementById("search-input");
+  const searchButton = document.getElementById("search-button");
+
+  // Function to handle message search
+  function handleSearch() {
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    if (searchTerm === "") {
+      // If the search term is empty, reset the display to show all messages
+      chatMessages.querySelectorAll(".message").forEach((message) => {
+        message.style.display = "block";
+      });
+    } else {
+      // Otherwise, filter and display only the messages that match the search term
+      chatMessages.querySelectorAll(".message").forEach((message) => {
+        const content = message
+          .querySelector(".message-content")
+          .textContent.toLowerCase();
+        if (content.includes(searchTerm)) {
+          message.style.display = "block";
+        } else {
+          message.style.display = "none";
+        }
+      });
+    }
+  }
+
+  // Event listener for search button click
+  searchButton.addEventListener("click", handleSearch);
+
+  // Event listener for search input keypress (to trigger search on Enter)
+  searchInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
+  });
 
   // Function to format timestamp for messages
   function formatTimestamp(timestamp) {

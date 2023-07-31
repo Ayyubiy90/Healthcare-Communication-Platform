@@ -8,6 +8,8 @@
 </head>
 
 <body>
+    <!-- Add a dark mode toggle button -->
+    <button type="button" id="dark-mode-toggle">Dark Mode</button>
     <header>
         <h1>Welcome to the Healthcare Communication Platform</h1>
         <!-- Add a navigation menu if needed -->
@@ -77,7 +79,16 @@
                         <input type="text" id="message-input" placeholder="Type your message...">
                         <button type="submit">Send</button>
                         <button id="clear-chat-button">Clear Chat</button>
+                        <div class="reply-input-container" id="reply-input-container">
+                            <input type="text" id="reply-input" placeholder="Type your reply...">
+                            <button type="button" id="cancel-reply-button">Cancel</button>
+                        </div>
                     </form>
+                    <!-- <label for="message-search">Search Messages:</label>
+                    <input type="text" id="message-search" placeholder="Enter search keyword..."> -->
+                    <!-- Add a search input field -->
+                    <input type="text" id="search-input" placeholder="Search messages...">
+                    <button type="button" id="search-button">Search</button>
                     <!-- Add a notification badge -->
                     <div class="notification-badge" id="notification-badge">0</div>
                     <!-- Add a container to display message reactions -->
@@ -87,12 +98,6 @@
                     <button type="button" id="send-image-button">Send Image</button>
                 </div>
                 <!-- Add a reply input field for threading -->
-                <div class="reply-input-container" id="reply-input-container">
-                    <input type="text" id="reply-input" placeholder="Type your reply...">
-                    <button type="button" id="cancel-reply-button">Cancel</button>
-                </div>
-                <label for="message-search">Search Messages:</label>
-                <input type="text" id="message-search" placeholder="Enter search keyword...">
             </form>
 
             <!-- HTML code for displaying the user list -->

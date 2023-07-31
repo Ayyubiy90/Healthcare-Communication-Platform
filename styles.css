@@ -64,6 +64,18 @@ ul li {
   margin-bottom: 0.5rem;
 }
 
+/* Add CSS for dark mode */
+body.dark-mode {
+  background-color: #333;
+  color: #fff;
+}
+
+/* Add CSS for dark mode on specific elements (customize as needed) */
+.dark-mode .chat-container {
+  background-color: #444;
+  color: #fff;
+}
+
 #is-typing-indicator {
   color: #aaa;
   font-style: italic;
