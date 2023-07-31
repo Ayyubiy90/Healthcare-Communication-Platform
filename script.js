@@ -171,21 +171,21 @@ function scrollToBottom() {
 //   isTypingIndicator.textContent = "";
 // }
 
-// Event listener for detecting typing
-let typingTimeout;
+// // Event listener for detecting typing
+// let typingTimeout;
 
-messageInput.addEventListener("input", () => {
-  const message = messageInput.value;
-  if (message) {
-    clearTimeout(typingTimeout);
-    emitTypingStatus(true); // User is typing, send WebSocket message
-    typingTimeout = setTimeout(() => {
-      emitTypingStatus(false); // User stopped typing, send WebSocket message
-    }, TYPING_INTERVAL);
-  } else {
-    emitTypingStatus(false); // User stopped typing (input field is empty), send WebSocket message
-  }
-});
+// messageInput.addEventListener("input", () => {
+//   const message = messageInput.value;
+//   if (message) {
+//     clearTimeout(typingTimeout);
+//     emitTypingStatus(true); // User is typing, send WebSocket message
+//     typingTimeout = setTimeout(() => {
+//       emitTypingStatus(false); // User stopped typing, send WebSocket message
+//     }, TYPING_INTERVAL);
+//   } else {
+//     emitTypingStatus(false); // User stopped typing (input field is empty), send WebSocket message
+//   }
+// });
 
 function deleteMessage(messageId) {
   // Send a WebSocket message to the server to delete the message
@@ -193,6 +193,22 @@ function deleteMessage(messageId) {
     deleteMessage: messageId,
   };
   socket.send(JSON.stringify(data));
+}
+
+// Function to update message status
+function updateMessageStatus(messageId, isRead) {
+  const messageContainer = chatMessages.querySelector(
+    `[data-message-id="${messageId}"]`
+  );
+  if (messageContainer) {
+    const statusIndicator = messageContainer.querySelector(
+      ".message-status-indicator"
+    );
+    if (statusIndicator) {
+      // Update the message status indicator
+      statusIndicator.textContent = isRead ? "✔️✔️" : "✔️";
+    }
+  }
 }
 
 // WebSocket event listener for receiving real-time updates
@@ -238,22 +254,6 @@ socket.addEventListener("message", (event) => {
     displayMessage(message, sender, timestamp, false, isImage, messageId);
   }
 });
-
-// Function to update message status
-function updateMessageStatus(messageId, isRead) {
-  const messageContainer = chatMessages.querySelector(
-    `[data-message-id="${messageId}"]`
-  );
-  if (messageContainer) {
-    const statusIndicator = messageContainer.querySelector(
-      ".message-status-indicator"
-    );
-    if (statusIndicator) {
-      // Update the message status indicator
-      statusIndicator.textContent = isRead ? "✔️✔️" : "✔️";
-    }
-  }
-}
 
 // Event listener for message deletion
 chatMessages.addEventListener("click", (event) => {
@@ -336,10 +336,6 @@ function formatTimestamp() {
 
 // Event listener for typing detection
 chatForm.addEventListener("input", handleTyping);
-
-// Add this code to the end of the script.js file
-const imageInput = document.getElementById("image-input");
-const sendImageButton = document.getElementById("send-image-button");
 
 // Function to handle image selection and sending
 sendImageButton.addEventListener("click", () => {
@@ -486,53 +482,23 @@ function simulateUserLogout(username) {
 }
 
 // Function to handle message editing
-function handleEdit(messageId, newContent) {
-  const messageContainer = chatMessages.querySelector(
-    `[data-message-id="${messageId}"]`
-  );
-  if (messageContainer) {
+chatMessages.addEventListener("click", (event) => {
+  if (event.target.classList.contains("edit-button")) {
+    const messageContainer = event.target.closest(".message");
     const messageContent = messageContainer.querySelector(".message-content");
-    const currentContent = messageContent.textContent;
-
-    // Show a confirmation dialog before proceeding with the edit
-    const isConfirmed = window.confirm("Do you want to edit this message?");
-    if (isConfirmed) {
-      // Update the message content and emit the edited message to the WebSocket server
-      messageContent.textContent = newContent;
-      const data = {
-        editMessage: {
-          messageId,
-          content: newContent,
-        },
-      };
-      socket.send(JSON.stringify(data));
-    } else {
-      // If the user cancels the edit, revert the message content back to the original
-      messageContent.textContent = currentContent;
+    const originalMessage = messageContent.textContent.trim();
+    const newMessage = prompt("Edit your message:", originalMessage);
+    if (newMessage !== null && newMessage !== originalMessage) {
+      // Emit the edited message to the WebSocket server
+      const messageId = messageContainer.dataset.messageId;
+      socket.send(
+        JSON.stringify({ editMessage: { messageId, content: newMessage } })
+      );
+      // Update the displayed message with the edited content
+      messageContent.textContent = newMessage;
     }
   }
-}
-
-// Function to handle message deletion
-function handleDelete(event) {
-  const messageContainer = event.target.closest(".message");
-  const messageId = messageContainer.dataset.messageId;
-
-  // Emit the message ID to the WebSocket server for deletion
-  socket.send(JSON.stringify({ deleteMessage: messageId }));
-
-  // Remove the message container from the DOM
-  messageContainer.remove();
-}
-
-// Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
-simulateUserLogin("John Doe"); // Simulate John Doe logging in
-simulateUserLogout("John Doe"); // Simulate John Doe logging out
-
-// The rest of your JavaScript code...
-
-// script.js
-// ... (existing code)
+});
 
 // Event listener for message editing
 chatMessages.addEventListener("click", (event) => {
@@ -552,3 +518,73 @@ chatMessages.addEventListener("click", (event) => {
     }
   }
 });
+
+// Function to handle message deletion
+function handleDelete(event) {
+  const messageContainer = event.target.closest(".message");
+  const messageId = messageContainer.dataset.messageId;
+
+  // Emit the message ID to the WebSocket server for deletion
+  socket.send(JSON.stringify({ deleteMessage: messageId }));
+
+  // Remove the message container from the DOM
+  messageContainer.remove();
+}
+
+// Event listener for message deletion
+chatMessages.addEventListener("click", (event) => {
+  if (event.target.classList.contains("delete-button")) {
+    handleDelete(event);
+  }
+});
+
+// Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
+simulateUserLogin("John Doe"); // Simulate John Doe logging in
+simulateUserLogout("John Doe"); // Simulate John Doe logging out
+
+// Function to handle user typing status
+function handleTyping(username, typing) {
+  if (typing) {
+    // If the user is typing, show the typing indicator with the username
+    showTypingIndicator(username);
+  } else {
+    // If the user is not typing, hide the typing indicator
+    hideTypingIndicator();
+  }
+}
+
+// Event listener for detecting typing
+let typingTimeout;
+
+messageInput.addEventListener("input", () => {
+  const message = messageInput.value;
+  if (message) {
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+      // After a certain interval of inactivity, consider the user has stopped typing
+      hideTypingIndicator();
+    }, TYPING_INTERVAL);
+    // Notify other users that the current user is typing
+    notifyTyping(true);
+  } else {
+    // If the message input is empty, the user is not typing
+    hideTypingIndicator();
+    // Notify other users that the current user has stopped typing
+    notifyTyping(false);
+  }
+});
+
+// Function to notify other users that the current user is typing or has stopped typing
+function notifyTyping(typing) {
+  const data = {
+    userTyping: {
+      username: currentUser, // Replace 'currentUser' with the actual username of the current user
+      typing,
+    },
+  };
+  socket.send(JSON.stringify(data));
+}
+
+// Add this code to the end of the script.js file
+const imageInput = document.getElementById("image-input");
+const sendImageButton = document.getElementById("send-image-button");
