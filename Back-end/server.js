@@ -135,6 +135,32 @@ function broadcastUserList() {
   });
 }
 
+// Function to handle user profile updates
+function updateUserProfile(username, updatedProfile) {
+  // Find the user with the given username
+  const user = findUserByUsername(username);
+
+  if (user) {
+    // Update the user's profile information
+    user.username = updatedProfile.username || user.username;
+    user.email = updatedProfile.email || user.email;
+    // You can add more fields to update as needed (e.g., name, age, etc.)
+
+    return { success: true, message: "User profile updated successfully." };
+  }
+
+  return { success: false, message: "User not found." };
+}
+
+// Sample API endpoint for updating user profile
+app.put("/api/updateProfile", (req, res) => {
+  const { username, updatedProfile } = req.body;
+
+  // Perform user profile update
+  const result = updateUserProfile(username, updatedProfile);
+  res.json(result);
+});
+
 // Start the WebSocket server
 websocketServer.start(server);
 
