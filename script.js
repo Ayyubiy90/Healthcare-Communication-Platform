@@ -273,6 +273,19 @@ function updateMessageStatus(messageId, isRead) {
 socket.addEventListener("message", (event) => {
   const data = JSON.parse(event.data);
 
+  if (data.userLogin) {
+    // If the received data contains a 'userLogin' property, it means a user logged in.
+    // Extract the 'username' from the 'userLogin' object.
+    const { username } = data.userLogin;
+    // Call the 'handleUserLogin' function with the extracted 'username'.
+    handleUserLogin(username);
+  } else if (data.userLogout) {
+    // If the received data contains a 'userLogout' property, it means a user logged out.
+    // Extract the 'username' from the 'userLogout' object.
+    const { username } = data.userLogout;
+    // Call the 'handleUserLogout' function with the extracted 'username'.
+    handleUserLogout(username);
+  }
   if (data.editMessage) {
     // If the received data contains an 'editMessage' property, it means a message was edited.
     // Extract the 'messageId' and 'content' from the 'editMessage' object.
