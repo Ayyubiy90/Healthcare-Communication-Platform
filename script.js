@@ -515,6 +515,19 @@ function displayUsers() {
 // Call the displayUsers function to initially display the users
 displayUsers();
 
+// Function to update the online status of a user
+function updateOnlineStatus(username, online) {
+  // Find the user in the users array
+  const user = users.find((user) => user.username === username);
+  if (user) {
+    // Update the online status
+    user.online = online;
+
+    // Update the user list display
+    displayUsers();
+  }
+}
+
 // Sample function to simulate user login
 function simulateUserLogin(username) {
   // Check if the user is already in the users array
@@ -543,6 +556,10 @@ function simulateUserLogout(username) {
   // Update the user list display
   displayUsers();
 }
+
+// Sample usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
+simulateUserLogin("John Doe"); // Simulate John Doe logging in
+simulateUserLogout("John Doe"); // Simulate John Doe logging out
 
 // Function to handle message editing
 chatMessages.addEventListener("click", (event) => {
