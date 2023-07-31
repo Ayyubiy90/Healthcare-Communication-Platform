@@ -225,6 +225,24 @@ function displayMessage(
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
+// Get the message search input element
+const messageSearchInput = document.getElementById("message-search");
+
+// Event listener for the message search input
+messageSearchInput.addEventListener("input", () => {
+  const keyword = messageSearchInput.value.trim().toLowerCase();
+
+  // Filter chat messages based on the search keyword
+  chatMessages.querySelectorAll(".message").forEach((messageContainer) => {
+    const messageContent = messageContainer
+      .querySelector(".message-content")
+      .textContent.toLowerCase();
+    messageContainer.style.display = messageContent.includes(keyword)
+      ? "block"
+      : "none";
+  });
+});
+
 // Get the clear chat button element
 const clearChatButton = document.getElementById("clear-chat-button");
 
@@ -579,6 +597,36 @@ imageInput.addEventListener("change", (event) => {
     };
     reader.onerror = () => {
       displayError("Error: Failed to read the selected image.");
+    };
+  }
+});
+
+// Get the image preview container element
+const imagePreviewContainer = document.getElementById(
+  "image-preview-container"
+);
+
+// Function to display image preview
+function displayImagePreview(imageUrl) {
+  const imagePreview = document.createElement("img");
+  imagePreview.classList.add("image-preview");
+  imagePreview.src = imageUrl;
+  imagePreview.alt = "Selected Image Preview";
+  imagePreviewContainer.innerHTML = ""; // Clear previous preview (if any)
+  imagePreviewContainer.appendChild(imagePreview);
+}
+
+// Event listener for the image input change
+imageInput.addEventListener("change", (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      // Display the selected image as a preview
+      displayImagePreview(reader.result);
+      // Emit the image data to the WebSocket server
+      socket.send(JSON.stringify({ image: reader.result }));
     };
   }
 });
