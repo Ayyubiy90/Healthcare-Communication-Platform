@@ -161,6 +161,57 @@ app.put("/api/updateProfile", (req, res) => {
   res.json(result);
 });
 
+// Function to handle user password update
+function updateUserPassword(username, newPassword) {
+  // Find the user with the given username
+  const user = findUserByUsername(username);
+
+  if (user) {
+    // Update the user's password
+    user.password = newPassword;
+
+    return { success: true, message: "Password updated successfully." };
+  }
+
+  return { success: false, message: "User not found." };
+}
+
+// Sample API endpoint for updating user password
+app.put("/api/updatePassword", (req, res) => {
+  const { username, newPassword } = req.body;
+
+  // Perform user password update
+  const result = updateUserPassword(username, newPassword);
+  res.json(result);
+});
+
+// Function to handle notification settings update
+function updateNotificationSettings(username, updatedSettings) {
+  // Find the user with the given username
+  const user = findUserByUsername(username);
+
+  if (user) {
+    // Update the user's notification settings
+    user.notificationSettings = updatedSettings;
+
+    return {
+      success: true,
+      message: "Notification settings updated successfully.",
+    };
+  }
+
+  return { success: false, message: "User not found." };
+}
+
+// Sample API endpoint for updating notification settings
+app.put("/api/updateNotificationSettings", (req, res) => {
+  const { username, updatedSettings } = req.body;
+
+  // Perform notification settings update
+  const result = updateNotificationSettings(username, updatedSettings);
+  res.json(result);
+});
+
 // Start the WebSocket server
 websocketServer.start(server);
 
