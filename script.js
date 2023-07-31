@@ -171,6 +171,34 @@ function displayMessage(
       deleteMessage(messageId);
     });
   }
+
+  // Add edit button for the message (only for messages sent by the current user)
+  if (sender === currentUser) {
+    const editButton = document.createElement("button");
+    editButton.textContent = "Edit";
+    editButton.classList.add("edit-button");
+    div.appendChild(editButton);
+
+    editButton.addEventListener("click", () => {
+      const originalMessage = isImage ? "Sent Image" : message;
+      const newMessage = prompt("Edit your message:", originalMessage);
+      if (newMessage !== null && newMessage !== originalMessage) {
+        // Emit the edited message to the WebSocket server
+        socket.send(
+          JSON.stringify({ editMessage: { messageId, content: newMessage } })
+        );
+        // Update the displayed message with the edited content
+        messageContent.textContent = newMessage;
+      }
+    });
+  }
+
+  // Function to handle message deletion
+  function deleteMessage(messageId) {
+    // Emit the message ID to the WebSocket server for deletion
+    socket.send(JSON.stringify({ deleteMessage: messageId }));
+  }
+
   // Check if the user is already viewing the latest messages (scrolled to the bottom)
   const isAtBottom =
     chatMessages.scrollHeight - chatMessages.clientHeight <=
@@ -337,7 +365,13 @@ socket.addEventListener("close", (event) => {
 //   displayMessage(message, sender);
 // });
 
-// Send message when the form is submitted
+// Function to send a new message
+function sendMessage(message) {
+  // Emit the message to the WebSocket server
+  socket.send(JSON.stringify({ newMessage: { message } }));
+}
+
+// Event listener for sending a message
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const messageInput = document.getElementById("message-input");
@@ -348,12 +382,11 @@ chatForm.addEventListener("submit", (event) => {
     return;
   }
 
-  // Emit the message to the WebSocket server
-  socket.send(JSON.stringify({ message }));
-  messageInput.value = ""; // Clear the input field after sending the message
+  // Call the sendMessage function to send the message
+  sendMessage(message);
 
   // Clear the message input field after sending
-  event.target.reset();
+  messageInput.value = "";
 });
 
 // Function to format timestamp for messages
