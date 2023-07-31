@@ -5,6 +5,7 @@ const chatForm = document.getElementById("chat-form");
 const chatMessages = document.querySelector(".chat-messages");
 const userList = document.getElementById("user-list");
 
+// Event listener for user registration form submission
 registrationForm.addEventListener("submit", (event) => {
   event.preventDefault();
   // Get form data
@@ -23,6 +24,7 @@ registrationForm.addEventListener("submit", (event) => {
   // });
 });
 
+// Event listener for user login form submission
 loginForm.addEventListener("submit", (event) => {
   event.preventDefault();
   // Get form data
@@ -158,16 +160,16 @@ function scrollToBottom() {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-const isTypingIndicator = document.getElementById("is-typing-indicator");
+// const isTypingIndicator = document.getElementById("is-typing-indicator");
 
-// Function to handle typing indicator
-function showTypingIndicator(sender) {
-  isTypingIndicator.textContent = `${sender} is typing...`;
-}
+// // Function to handle typing indicator
+// function showTypingIndicator(sender) {
+//   isTypingIndicator.textContent = `${sender} is typing...`;
+// }
 
-function hideTypingIndicator() {
-  isTypingIndicator.textContent = "";
-}
+// function hideTypingIndicator() {
+//   isTypingIndicator.textContent = "";
+// }
 
 // Event listener for detecting typing
 let typingTimeout;
@@ -176,41 +178,14 @@ messageInput.addEventListener("input", () => {
   const message = messageInput.value;
   if (message) {
     clearTimeout(typingTimeout);
+    emitTypingStatus(true); // User is typing, send WebSocket message
     typingTimeout = setTimeout(() => {
-      hideTypingIndicator();
-    }, 1000); // Set an appropriate delay before hiding the typing indicator
+      emitTypingStatus(false); // User stopped typing, send WebSocket message
+    }, TYPING_INTERVAL);
   } else {
-    showTypingIndicator("Someone");
+    emitTypingStatus(false); // User stopped typing (input field is empty), send WebSocket message
   }
 });
-
-// Function to handle message editing
-function handleEdit(messageId, newContent) {
-  const messageContainer = chatMessages.querySelector(
-    `[data-message-id="${messageId}"]`
-  );
-  if (messageContainer) {
-    const messageContent = messageContainer.querySelector(".message-content");
-    const currentContent = messageContent.textContent;
-
-    // Show a confirmation dialog before proceeding with the edit
-    const isConfirmed = window.confirm("Do you want to edit this message?");
-    if (isConfirmed) {
-      // Update the message content and emit the edited message to the WebSocket server
-      messageContent.textContent = newContent;
-      const data = {
-        editMessage: {
-          messageId,
-          content: newContent,
-        },
-      };
-      socket.send(JSON.stringify(data));
-    } else {
-      // If the user cancels the edit, revert the message content back to the original
-      messageContent.textContent = currentContent;
-    }
-  }
-}
 
 function deleteMessage(messageId) {
   // Send a WebSocket message to the server to delete the message
@@ -278,18 +253,6 @@ function updateMessageStatus(messageId, isRead) {
       statusIndicator.textContent = isRead ? "✔️✔️" : "✔️";
     }
   }
-}
-
-// Function to handle message deletion
-function handleDelete(event) {
-  const messageContainer = event.target.closest(".message");
-  const messageId = messageContainer.dataset.messageId;
-
-  // Emit the message ID to the WebSocket server for deletion
-  socket.send(JSON.stringify({ deleteMessage: messageId }));
-
-  // Remove the message container from the DOM
-  messageContainer.remove();
 }
 
 // Event listener for message deletion
@@ -424,8 +387,46 @@ chatMessages.addEventListener("click", (event) => {
   }
 });
 
-// Sample users array with online status
-let users = [
+// Function to handle user typing status
+let typingTimer;
+const TYPING_INTERVAL = 1000; // Time in milliseconds
+const isTypingIndicator = document.getElementById("is-typing-indicator");
+
+function handleTyping() {
+  // Show "typing" indicator
+  isTypingIndicator.textContent = "Typing...";
+  clearTimeout(typingTimer);
+  typingTimer = setTimeout(() => {
+    // Hide "typing" indicator after a certain interval
+    isTypingIndicator.textContent = "";
+  }, TYPING_INTERVAL);
+}
+
+function showTypingIndicator(sender) {
+  isTypingIndicator.textContent = `${sender} is typing...`;
+}
+
+function hideTypingIndicator() {
+  isTypingIndicator.textContent = "";
+}
+
+// Function to emit typing status to the server
+function emitTypingStatus(typing) {
+  // Send a WebSocket message to the server to inform about typing status
+  const data = {
+    userTyping: {
+      username: currentUser, // Replace 'currentUser' with the username of the current user
+      typing,
+    },
+  };
+  socket.send(JSON.stringify(data));
+}
+
+// Event listener for typing detection
+chatForm.addEventListener("input", handleTyping);
+
+// Add an "online" property to the users array to track online status
+const users = [
   { username: "John Doe", online: false },
   { username: "Jane Smith", online: true },
   // Add more users as needed
@@ -482,6 +483,46 @@ function simulateUserLogout(username) {
 
   // Update the user list display
   displayUsers();
+}
+
+// Function to handle message editing
+function handleEdit(messageId, newContent) {
+  const messageContainer = chatMessages.querySelector(
+    `[data-message-id="${messageId}"]`
+  );
+  if (messageContainer) {
+    const messageContent = messageContainer.querySelector(".message-content");
+    const currentContent = messageContent.textContent;
+
+    // Show a confirmation dialog before proceeding with the edit
+    const isConfirmed = window.confirm("Do you want to edit this message?");
+    if (isConfirmed) {
+      // Update the message content and emit the edited message to the WebSocket server
+      messageContent.textContent = newContent;
+      const data = {
+        editMessage: {
+          messageId,
+          content: newContent,
+        },
+      };
+      socket.send(JSON.stringify(data));
+    } else {
+      // If the user cancels the edit, revert the message content back to the original
+      messageContent.textContent = currentContent;
+    }
+  }
+}
+
+// Function to handle message deletion
+function handleDelete(event) {
+  const messageContainer = event.target.closest(".message");
+  const messageId = messageContainer.dataset.messageId;
+
+  // Emit the message ID to the WebSocket server for deletion
+  socket.send(JSON.stringify({ deleteMessage: messageId }));
+
+  // Remove the message container from the DOM
+  messageContainer.remove();
 }
 
 // Example usage of simulateUserLogin and simulateUserLogout (you can call these functions based on your login/logout logic):
