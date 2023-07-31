@@ -185,6 +185,36 @@ app.put("/api/updatePassword", (req, res) => {
   res.json(result);
 });
 
+// Function to handle friend requests
+function sendFriendRequest(senderUsername, receiverUsername) {
+  // Find the users with the given usernames
+  const sender = findUserByUsername(senderUsername);
+  const receiver = findUserByUsername(receiverUsername);
+
+  if (sender && receiver) {
+    // Check if the friend request already exists
+    if (!sender.friends.includes(receiverUsername)) {
+      // Add the receiver to the sender's pending friend requests
+      sender.pendingFriendRequests.push(receiverUsername);
+
+      return { success: true, message: "Friend request sent successfully." };
+    } else {
+      return { success: false, message: "Friend request already sent." };
+    }
+  }
+
+  return { success: false, message: "User not found." };
+}
+
+// Sample API endpoint for sending friend requests
+app.post("/api/sendFriendRequest", (req, res) => {
+  const { senderUsername, receiverUsername } = req.body;
+
+  // Send friend request
+  const result = sendFriendRequest(senderUsername, receiverUsername);
+  res.json(result);
+});
+
 // Function to handle notification settings update
 function updateNotificationSettings(username, updatedSettings) {
   // Find the user with the given username
