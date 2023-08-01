@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("http");
-const websocketServer = require("./websocketServer");
+const WebSocket = require("ws");
+const createWebSocketServer = require("./Back-end/websocketServer"); // Adjust the path to the websocketserver.js file based on your project structure
 
 const app = express();
 const server = http.createServer(app);
@@ -955,3 +956,9 @@ wss.on("connection", (ws) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// ... (previous code)
+
+// Create WebSocket server instance and start it
+const websocketServer = createWebSocketServer(server);
+websocketServer.start();

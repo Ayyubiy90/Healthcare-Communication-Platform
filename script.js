@@ -727,8 +727,8 @@ socket.addEventListener("close", (event) => {
   );
 });
 
-// WebSocket connection (to be implemented in the backend)
-const socket = new WebSocket("ws://localhost:8080");
+// Sample client-side code to connect to the WebSocket server and handle messages
+const socket = new WebSocket("ws://localhost:8080"); // Adjust the URL to match your server URL
 
 // Event listener when the WebSocket connection is established
 socket.addEventListener("open", () => {
@@ -757,10 +757,35 @@ socket.addEventListener("close", (event) => {
 
 // Function to send a new message
 function sendMessage(message) {
-  // Emit the message to the WebSocket server
-  socket.send(JSON.stringify({ newMessage: { message } }));
+  const data = { message };
+  socket.send(JSON.stringify(data));
+}
+// Sample function to send typing status to the WebSocket server
+function sendTypingStatus(isTyping) {
+  const data = { typing: { username: "current_user", typing: isTyping } };
+  socket.send(JSON.stringify(data));
 }
 
+// Example usage of the above functions (you can call these based on your frontend event handlers):
+// Sending a message when the user clicks the send button
+sendButton.addEventListener("click", () => {
+  const messageInput = document.getElementById("message-input");
+  const message = messageInput.value.trim();
+  if (message !== "") {
+    sendMessage(message);
+    messageInput.value = ""; // Clear the input field after sending
+  }
+});
+
+// Sending typing status when the user starts or stops typing
+messageInput.addEventListener("input", () => {
+  const message = messageInput.value.trim();
+  if (message !== "") {
+    sendTypingStatus(true);
+  } else {
+    sendTypingStatus(false);
+  }
+});
 // Event listener for sending a message
 chatForm.addEventListener("submit", (event) => {
   event.preventDefault();
