@@ -172,6 +172,47 @@ function addMessage(sender, recipients, message) {
   messages.push({ sender, recipients, message, timestamp: new Date() });
 }
 
+// Function to update the content of a message
+function updateMessage(messageId, newContent) {
+  const message = messages.find((msg) => msg.messageId === messageId);
+  if (message) {
+    // Update the message content
+    message.message = newContent;
+  }
+}
+
+// Sample WebSocket event listener for handling deleted messages
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.deleteMessage) {
+        // If the received data contains a 'deleteMessage' property, it means a message was deleted.
+        // Extract the 'messageId' from the 'deleteMessage' object.
+        const messageId = data.deleteMessage;
+
+        // Delete the message from the messages array
+        deleteMessage(messageId);
+
+        // Broadcast the deleted message ID to all connected clients
+        websocketServer.wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ deleteMessage: messageId }));
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
 // Sample WebSocket event listener for receiving real-time updates
 websocketServer.wss.on("connection", (ws) => {
   ws.on("message", (message) => {
