@@ -189,7 +189,16 @@ websocketServer.wss.on("connection", (ws) => {
         // Broadcast the received message to all connected clients
         websocketServer.wss.clients.forEach((client) => {
           if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({ newMessage: { message, sender, recipients, timestamp: new Date() } }));
+            client.send(
+              JSON.stringify({
+                newMessage: {
+                  message,
+                  sender,
+                  recipients,
+                  timestamp: new Date(),
+                },
+              })
+            );
           }
         });
       }
@@ -209,7 +218,10 @@ app.get("/api/messages/:username", (req, res) => {
   const { username } = req.params;
 
   // Filter messages to find messages for the specified user (either as a sender or recipient)
-  const userMessages = messages.filter((message) => message.sender === username || message.recipients.includes(username));
+  const userMessages = messages.filter(
+    (message) =>
+      message.sender === username || message.recipients.includes(username)
+  );
 
   res.json(userMessages);
 });
