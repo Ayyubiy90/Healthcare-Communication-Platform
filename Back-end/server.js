@@ -32,6 +32,19 @@ function findUserByUsername(username) {
   return users.find((user) => user.username === username);
 }
 
+// Function to update user profile
+function updateUserProfile(username, newProfileData) {
+  const user = findUserByUsername(username);
+  if (user) {
+    // Update the user's profile data (e.g., name, profile picture, etc.)
+    // For simplicity, we'll just update the email in this example
+    user.email = newProfileData.email;
+    return { success: true, message: "Profile updated successfully." };
+  } else {
+    return { success: false, message: "User not found." };
+  }
+}
+
 // Function to register a new user
 function registerUser(username, email, password) {
   // Check if a user with the same email already exists
@@ -78,6 +91,38 @@ app.post("/api/register", (req, res) => {
   const result = registerUser(username, email, password);
   res.json(result);
 });
+
+// Sample API endpoint for user authentication
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  // Find the user by username
+  const user = findUserByUsername(username);
+
+  if (user && user.password === password) {
+    // If the username and password match, generate a JWT and send it as a response
+    const token = generateToken(user.username);
+    res.json({ success: true, token });
+  } else {
+    res.json({ success: false, message: "Invalid username or password." });
+  }
+});
+
+// Function to generate a JSON Web Token (JWT)
+function generateToken(username) {
+  // In a real-world scenario, use a secure secret key to sign the token
+  // For simplicity, we'll use a simple string as the secret key
+  const secretKey = "your_secret_key_here";
+
+  // Set the token payload (include any relevant user information)
+  const payload = { username };
+
+  // Set the token expiration time (e.g., 1 hour from now)
+  const expiresIn = "1h";
+
+  // Sign the token with the secret key and return it
+  return jwt.sign(payload, secretKey, { expiresIn });
+}
 
 // Sample API endpoint for user login
 app.post("/api/login", (req, res) => {
