@@ -213,6 +213,9 @@ websocketServer.wss.on("connection", (ws) => {
   });
 });
 
+// Create a WebSocket server using the HTTP server
+const wss = new WebSocket.Server({ server });
+
 // Sample WebSocket event listener for receiving real-time updates
 websocketServer.wss.on("connection", (ws) => {
   ws.on("message", (message) => {
@@ -482,6 +485,46 @@ websocketServer.wss.on("connection", (ws) => {
     try {
       const data = JSON.parse(message);
 
+      // Handle incoming private messages
+      if (data.privateMessage) {
+        const { sender, recipient, message } = data.privateMessage;
+        // Find the recipient WebSocket
+        const recipientWs = getWebSocketByUsername(recipient);
+        if (recipientWs) {
+          // Send the private message to the recipient
+          recipientWs.send(
+            JSON.stringify({ privateMessage: { sender, message } })
+          );
+          // Also, notify the sender that the message was sent successfully
+          ws.send(
+            JSON.stringify({ privateMessageStatus: { recipient, sent: true } })
+          );
+        } else {
+          // If the recipient is not online or not found, notify the sender about the delivery failure
+          ws.send(
+            JSON.stringify({ privateMessageStatus: { recipient, sent: false } })
+          );
+        }
+        return;
+      }
+
+      // Handle message status update
+      if (data.messageStatus) {
+        const { messageId, isRead } = data.messageStatus;
+        // Update the message status in the server's database or data store
+        // ... (code to update the message status)
+
+        // Broadcast the message status update to all connected clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(
+              JSON.stringify({ messageStatus: { messageId, isRead } })
+            );
+          }
+        });
+        return;
+      }
+
       if (data.editMessage) {
         // If the received data contains an 'editMessage' property, it means a message was edited.
         const { messageId, content } = data.editMessage;
@@ -504,6 +547,16 @@ websocketServer.wss.on("connection", (ws) => {
     // Perform any cleanup or handling when a client disconnects
   });
 });
+
+// Function to find WebSocket connection by username
+function getWebSocketByUsername(username) {
+  for (const client of wss.clients) {
+    if (client.username === username && client.readyState === WebSocket.OPEN) {
+      return client;
+    }
+  }
+  return null;
+}
 
 // Sample API endpoint to get all messages for a specific user
 app.get("/api/messages/:username", (req, res) => {
