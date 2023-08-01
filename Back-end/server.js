@@ -421,6 +421,85 @@ websocketServer.wss.on("connection", (ws) => {
   });
 });
 
+// Function to handle user typing status
+function handleUserTyping(sender, typing) {
+  // Broadcast the user's typing status to all connected clients
+  websocketServer.wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ userTyping: { sender, typing } }));
+    }
+  });
+}
+
+// Sample WebSocket event listener for handling user typing status
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.typing !== undefined) {
+        // If the received data contains a 'typing' property, it means the user's typing status changed.
+        const { sender, typing } = data;
+
+        // Handle the user's typing status
+        handleUserTyping(sender, typing);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
+// Function to handle message editing
+function handleEditMessage(messageId, content) {
+  // Find the index of the message in the messages array
+  const messageIndex = messages.findIndex((msg) => msg.messageId === messageId);
+  if (messageIndex !== -1) {
+    // Update the content of the message
+    messages[messageIndex].message = content;
+
+    // Broadcast the edited message to all connected clients
+    websocketServer.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(
+          JSON.stringify({
+            editMessage: { messageId, content },
+          })
+        );
+      }
+    });
+  }
+}
+
+// Sample WebSocket event listener for handling message editing
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.editMessage) {
+        // If the received data contains an 'editMessage' property, it means a message was edited.
+        const { messageId, content } = data.editMessage;
+
+        // Handle the message editing
+        handleEditMessage(messageId, content);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
 // Sample API endpoint to get all messages for a specific user
 app.get("/api/messages/:username", (req, res) => {
   const { username } = req.params;
