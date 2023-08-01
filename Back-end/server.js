@@ -547,6 +547,45 @@ function updateUserProfile(username, updatedProfile) {
   return { success: false, message: "User not found." };
 }
 
+// Function to handle message deletion
+function handleDeleteMessage(messageId) {
+  // Filter out the deleted message from the messages array
+  messages = messages.filter((msg) => msg.messageId !== messageId);
+
+  // Broadcast the deleted message ID to all connected clients
+  websocketServer.wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ deleteMessage: messageId }));
+    }
+  });
+}
+
+// Sample WebSocket event listener for handling message deletion
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.deleteMessage) {
+        // If the received data contains a 'deleteMessage' property, it means a message was deleted.
+        const messageId = data.deleteMessage;
+
+        // Handle the message deletion
+        handleDeleteMessage(messageId);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+
+    // Handle user disconnection here (e.g., remove user from active users list)
+  });
+});
+
 // Sample API endpoint for updating user profile
 app.put("/api/updateProfile", (req, res) => {
   const { username, updatedProfile } = req.body;
@@ -672,6 +711,40 @@ app.put("/api/handleFriendRequest", (req, res) => {
   // Handle friend request
   const result = handleFriendRequest(receiverUsername, senderUsername, accept);
   res.json(result);
+});
+
+// Sample active users list (You can use a database for a more robust implementation)
+let activeUsers = [];
+
+// Function to handle user disconnection
+function handleUserDisconnection(userId) {
+  // Remove the user from the list of active users
+  activeUsers = activeUsers.filter((user) => user.userId !== userId);
+}
+
+// Sample WebSocket event listener for handling user disconnection
+websocketServer.wss.on("connection", (ws) => {
+  // Get the user ID from the WebSocket connection (You can set this when a user logs in)
+  const userId = getUserIdFromWebSocket(ws);
+
+  // Add the user to the list of active users
+  activeUsers.push({ userId });
+
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      // ... (previous message handling code)
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Handle user disconnection
+    handleUserDisconnection(userId);
+  });
 });
 
 // Start the WebSocket server
