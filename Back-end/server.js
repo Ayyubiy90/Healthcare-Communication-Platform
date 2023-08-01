@@ -489,6 +489,11 @@ websocketServer.wss.on("connection", (ws) => {
         // Handle the message editing
         handleEditMessage(messageId, content);
       }
+      if (data.typing) {
+        // If the received data contains a 'typing' property, it means the user is typing.
+        const { username, typing } = data.typing;
+        broadcastTypingStatus(username, typing);
+      }
     } catch (error) {
       console.error("Error handling WebSocket message:", error);
     }
@@ -745,6 +750,120 @@ websocketServer.wss.on("connection", (ws) => {
     // Handle user disconnection
     handleUserDisconnection(userId);
   });
+});
+
+// Function to handle message editing
+function handleEditMessage(messageId, newContent) {
+  // Find the message with the given messageId in the messages array
+  const messageToUpdate = messages.find((msg) => msg.messageId === messageId);
+
+  if (messageToUpdate) {
+    // Update the message content with the new content
+    messageToUpdate.message = newContent;
+
+    // Broadcast the edited message to all connected clients
+    websocketServer.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(
+          JSON.stringify({ editMessage: { messageId, content: newContent } })
+        );
+      }
+    });
+  }
+}
+
+// Sample WebSocket event listener for handling message editing
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.editMessage) {
+        // If the received data contains an 'editMessage' property, it means a message was edited.
+        const { messageId, content } = data.editMessage;
+
+        // Handle the message editing
+        handleEditMessage(messageId, content);
+      }
+
+      // ... (previous message handling code)
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  // ... (previous code)
+});
+
+// Sample WebSocket event listener for handling user typing status
+websocketServer.wss.on("connection", (ws) => {
+  // WebSocket connection handling
+  wss.on("connection", (ws) => {
+    // Event listener for incoming messages from clients
+    ws.on("message", (message) => {
+      try {
+        const data = JSON.parse(message);
+        // Broadcast the received message to all connected clients
+        wss.clients.forEach((client) => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(message);
+          }
+        });
+
+        // Handle user typing status
+        if (data.typing) {
+          // If the received data contains a 'typing' property, it means the user is typing.
+          const { username, typing } = data.typing;
+          broadcastTypingStatus(username, typing);
+        }
+      } catch (error) {
+        console.error("Error handling WebSocket message:", error);
+      }
+    });
+
+    // Event listener for WebSocket connection closed
+    ws.on("close", () => {
+      console.log("WebSocket connection closed");
+      // Perform any cleanup or handling when a client disconnects
+    });
+  });
+
+  // Function to broadcast user typing status
+  function broadcastTypingStatus(username, isTyping) {
+    websocketServer.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(
+          JSON.stringify({ userTyping: { username, typing: isTyping } })
+        );
+      }
+    });
+  }
+
+  // Sample WebSocket event listener for detecting typing
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      // ... (previous message handling code)
+
+      // Handle user typing status
+      if (data.typing) {
+        // If the received data contains a 'typing' property, it means the user is typing.
+        const { username, typing } = data.typing;
+        broadcastTypingStatus(username, typing);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  // ... (previous code)
+});
+
+// Start the WebSocket server
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Start the WebSocket server
