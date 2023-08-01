@@ -254,6 +254,84 @@ websocketServer.wss.on("connection", (ws) => {
   });
 });
 
+// Function to update the status of a message
+function updateMessageStatus(messageId, isRead) {
+  const message = messages.find((msg) => msg.messageId === messageId);
+  if (message) {
+    // Update the message status
+    message.isRead = isRead;
+  }
+}
+
+// Sample WebSocket event listener for handling message status updates
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.messageStatus) {
+        // If the received data contains a 'messageStatus' property, it means a message status update.
+        // Extract the 'messageId' and 'isRead' from the 'messageStatus' object.
+        const { messageId, isRead } = data.messageStatus;
+
+        // Update the message status in the messages array
+        updateMessageStatus(messageId, isRead);
+
+        // Broadcast the updated message status to all connected clients
+        websocketServer.wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(
+              JSON.stringify({ messageStatus: { messageId, isRead } })
+            );
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
+// Function to handle user typing indicator
+function handleTyping(username, typing) {
+  // Broadcast the typing status to all connected clients
+  websocketServer.wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ userTyping: { username, typing } }));
+    }
+  });
+}
+
+// Sample WebSocket event listener for handling user typing indicators
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.userTyping) {
+        // If the received data contains a 'userTyping' property, it means a user's typing status update.
+        // Extract the 'username' and 'typing' from the 'userTyping' object.
+        const { username, typing } = data.userTyping;
+
+        // Broadcast the typing status to all connected clients
+        handleTyping(username, typing);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
 // Sample API endpoint to get all messages for a specific user
 app.get("/api/messages/:username", (req, res) => {
   const { username } = req.params;
