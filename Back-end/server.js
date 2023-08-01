@@ -332,6 +332,95 @@ websocketServer.wss.on("connection", (ws) => {
   });
 });
 
+// Function to handle message deletion
+function handleDelete(messageId) {
+  // Find the index of the message in the messages array
+  const messageIndex = messages.findIndex((msg) => msg.messageId === messageId);
+  if (messageIndex !== -1) {
+    // Remove the message from the messages array
+    messages.splice(messageIndex, 1);
+
+    // Broadcast the deleted message ID to all connected clients
+    websocketServer.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({ deleteMessage: messageId }));
+      }
+    });
+  }
+}
+
+// Sample WebSocket event listener for handling message deletion
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.deleteMessage) {
+        // If the received data contains a 'deleteMessage' property, it means a message was deleted.
+        const messageId = data.deleteMessage;
+
+        // Handle the message deletion
+        handleDelete(messageId);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
+// Function to handle image messages
+function handleImageMessage(sender, image) {
+  // Generate a unique ID for the message
+  const messageId = generateMessageId();
+
+  // Create a new image message object
+  const newImageMessage = {
+    messageId,
+    sender,
+    timestamp: new Date().toISOString(),
+    image,
+  };
+
+  // Add the new image message to the messages array
+  messages.push(newImageMessage);
+
+  // Broadcast the new image message to all connected clients
+  websocketServer.wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ newImageMessage }));
+    }
+  });
+}
+
+// Sample WebSocket event listener for handling image messages
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.image) {
+        // If the received data contains an 'image' property, it means an image message was sent.
+        const { sender, image } = data;
+
+        // Handle the image message
+        handleImageMessage(sender, image);
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
 // Sample API endpoint to get all messages for a specific user
 app.get("/api/messages/:username", (req, res) => {
   const { username } = req.params;
