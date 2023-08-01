@@ -163,6 +163,57 @@ app.get("/api/onlineUsers", (req, res) => {
   res.json({ success: true, onlineUsers });
 });
 
+// Sample messages array (replace this with your actual message data storage, e.g., a database)
+let messages = [];
+
+// Function to add a new message to the messages array
+function addMessage(sender, recipients, message) {
+  // Add the new message to the messages array
+  messages.push({ sender, recipients, message, timestamp: new Date() });
+}
+
+// Sample WebSocket event listener for receiving real-time updates
+websocketServer.wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    try {
+      const data = JSON.parse(message);
+
+      if (data.message) {
+        // If the received data contains a 'message' property, it means a new message is received.
+        // Extract the 'message', 'sender', and 'recipients' from the 'data' object.
+        const { message, sender, recipients } = data;
+
+        // Add the new message to the messages array
+        addMessage(sender, recipients, message);
+
+        // Broadcast the received message to all connected clients
+        websocketServer.wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ newMessage: { message, sender, recipients, timestamp: new Date() } }));
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error handling WebSocket message:", error);
+    }
+  });
+
+  ws.on("close", () => {
+    console.log("WebSocket connection closed");
+    // Perform any cleanup or handling when a client disconnects
+  });
+});
+
+// Sample API endpoint to get all messages for a specific user
+app.get("/api/messages/:username", (req, res) => {
+  const { username } = req.params;
+
+  // Filter messages to find messages for the specified user (either as a sender or recipient)
+  const userMessages = messages.filter((message) => message.sender === username || message.recipients.includes(username));
+
+  res.json(userMessages);
+});
+
 // Start the WebSocket server
 websocketServer.start(server);
 
